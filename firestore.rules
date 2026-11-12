@@ -1,0 +1,224 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Default deny all access
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() > 0 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function isValidUser(data) {
+      return data.userId is string && data.userId == request.auth.uid &&
+             data.email is string && data.email.size() > 3 && data.email.size() <= 100 &&
+             (!('displayName' in data) || (data.displayName is string && data.displayName.size() <= 100)) &&
+             data.createdAt is timestamp && data.createdAt <= request.time;
+    }
+
+    function isValidDevice(data) {
+      return data.deviceId is string && data.deviceId.size() > 0 && data.deviceId.size() <= 128 &&
+             data.userId is string && data.userId == request.auth.uid &&
+             data.name is string && data.name.size() > 0 && data.name.size() <= 60 &&
+             data.model is string && data.model.size() > 0 && data.model.size() <= 60 &&
+             data.mode in ['MONITOR', 'DEVICE'] &&
+             data.isOnline is bool &&
+             (!('batteryPercentage' in data) || (data.batteryPercentage is int && data.batteryPercentage >= 0 && data.batteryPercentage <= 100)) &&
+             (!('isCharging' in data) || data.isCharging is bool) &&
+             (!('locationSharingPaused' in data) || data.locationSharingPaused is bool) &&
+             (!('lastActive' in data) || (data.lastActive is timestamp && data.lastActive <= request.time)) &&
+             (!('updatedAt' in data) || (data.updatedAt is timestamp && data.updatedAt <= request.time));
+    }
+
+    function isValidDevicePair(data) {
+      return data.pairId is string && data.pairId.size() > 0 && data.pairId.size() <= 128 &&
+             data.monitorDeviceId is string && data.monitorDeviceId.size() <= 128 &&
+             data.monitorUserId is string &&
+             data.childDeviceId is string && data.childDeviceId.size() <= 128 &&
+             data.childUserId is string &&
+             (!('childDeviceName' in data) || (data.childDeviceName is string && data.childDeviceName.size() <= 60)) &&
+             data.status in ['ACTIVE', 'PAUSED', 'UNLINKED'] &&
+             (!('pairedAt' in data) || (data.pairedAt is timestamp && data.pairedAt <= request.time));
+    }
+
+    function isValidPairingCode(data) {
+      return data.code is string && data.code.size() == 6 &&
+             data.monitorDeviceId is string && data.monitorDeviceId.size() <= 128 &&
+             data.monitorUserId is string && data.monitorUserId == request.auth.uid &&
+             (!('monitorDeviceName' in data) || (data.monitorDeviceName is string && data.monitorDeviceName.size() <= 60)) &&
+             data.isUsed is bool &&
+             data.expiresAt is timestamp &&
+             data.createdAt is timestamp && data.createdAt <= request.time;
+    }
+
+    function isValidLocationUpdate(data) {
+      return data.deviceId is string && data.deviceId.size() <= 128 &&
+             data.userId is string && data.userId == request.auth.uid &&
+             data.latitude is number && data.latitude >= -90.0 && data.latitude <= 90.0 &&
+             data.longitude is number && data.longitude >= -180.0 && data.longitude <= 180.0 &&
+             data.accuracy is number && data.accuracy >= 0.0 &&
+             (!('speed' in data) || data.speed is number) &&
+             data.timestamp is timestamp && data.timestamp <= request.time;
+    }
+
+    function isValidSessionRequest(data) {
+      return data.requestId is string && data.requestId.size() <= 128 &&
+             data.monitorDeviceId is string && data.monitorDeviceId.size() <= 128 &&
+             data.monitorUserId is string &&
+             data.childDeviceId is string && data.childDeviceId.size() <= 128 &&
+             data.childUserId is string &&
+             data.sessionType in ['CAMERA', 'MIC'] &&
+             data.status in ['PENDING', 'ACCEPTED', 'DECLINED', 'ENDED'] &&
+             (!('offerSdp' in data) || (data.offerSdp is string && data.offerSdp.size() <= 10000)) &&
+             (!('answerSdp' in data) || (data.answerSdp is string && data.answerSdp.size() <= 10000)) &&
+             data.createdAt is timestamp && data.createdAt <= request.time &&
+             (!('updatedAt' in data) || (data.updatedAt is timestamp && data.updatedAt <= request.time));
+    }
+
+    function isValidSessionCandidate(data) {
+      return data.candidateId is string && data.candidateId.size() <= 128 &&
+             data.sender in ['MONITOR', 'CHILD'] &&
+             data.sdpMid is string && data.sdpMid.size() <= 64 &&
+             data.sdpMLineIndex is int && data.sdpMLineIndex >= 0 &&
+             data.sdp is string && data.sdp.size() <= 2048 &&
+             data.createdAt is timestamp && data.createdAt <= request.time;
+    }
+
+    function isValidActivityLog(data) {
+      return data.logId is string && data.logId.size() <= 128 &&
+             data.deviceId is string && data.deviceId.size() <= 128 &&
+             data.userId is string && data.userId == request.auth.uid &&
+             data.eventType is string && data.eventType.size() > 0 && data.eventType.size() <= 64 &&
+             data.details is string && data.details.size() <= 500 &&
+             data.timestamp is timestamp && data.timestamp <= request.time;
+    }
+
+    // 1. Users Collection
+    match /users/{userId} {
+      allow get: if isSignedIn() && (request.auth.uid == userId);
+      allow list: if isSignedIn() && (resource.data.userId == request.auth.uid);
+      allow create: if isSignedIn() && request.auth.uid == userId && isValidUser(incoming());
+      allow update: if isSignedIn() && request.auth.uid == userId &&
+                      incoming().userId == existing().userId &&
+                      incoming().createdAt == existing().createdAt &&
+                      isValidUser(incoming()) &&
+                      incoming().diff(existing()).affectedKeys().hasOnly(['displayName', 'email']);
+      allow delete: if isSignedIn() && request.auth.uid == userId;
+    }
+
+    // 2. Devices Collection
+    match /devices/{deviceId} {
+      allow get: if isSignedIn();
+      allow list: if isSignedIn() && (resource.data.userId == request.auth.uid);
+      allow create: if isSignedIn() && isValidId(deviceId) && isValidDevice(incoming());
+      allow update: if isSignedIn() && isValidId(deviceId) &&
+                      (existing().userId == request.auth.uid) &&
+                      incoming().deviceId == existing().deviceId &&
+                      incoming().userId == existing().userId &&
+                      isValidDevice(incoming()) &&
+                      incoming().diff(existing()).affectedKeys().hasOnly([
+                        'name', 'model', 'mode', 'isOnline', 'batteryPercentage',
+                        'isCharging', 'locationSharingPaused', 'lastActive', 'updatedAt'
+                      ]);
+      allow delete: if isSignedIn() && isValidId(deviceId) && (existing().userId == request.auth.uid);
+    }
+
+    // 3. Device Pairs Collection
+    match /device_pairs/{pairId} {
+      allow get: if isSignedIn() && (resource.data.monitorUserId == request.auth.uid || resource.data.childUserId == request.auth.uid);
+      allow list: if isSignedIn() && (resource.data.monitorUserId == request.auth.uid || resource.data.childUserId == request.auth.uid);
+      allow create: if isSignedIn() && isValidId(pairId) &&
+                      (incoming().monitorUserId == request.auth.uid || incoming().childUserId == request.auth.uid) &&
+                      isValidDevicePair(incoming());
+      allow update: if isSignedIn() && isValidId(pairId) &&
+                      (existing().monitorUserId == request.auth.uid || existing().childUserId == request.auth.uid) &&
+                      incoming().pairId == existing().pairId &&
+                      incoming().monitorUserId == existing().monitorUserId &&
+                      incoming().childUserId == existing().childUserId &&
+                      isValidDevicePair(incoming()) &&
+                      incoming().diff(existing()).affectedKeys().hasOnly(['status', 'childDeviceName']);
+      allow delete: if isSignedIn() && isValidId(pairId) &&
+                      (existing().monitorUserId == request.auth.uid || existing().childUserId == request.auth.uid);
+    }
+
+    // 4. Pairing Codes Collection
+    match /pairing_codes/{code} {
+      allow get: if isSignedIn();
+      allow list: if isSignedIn() && (resource.data.monitorUserId == request.auth.uid);
+      allow create: if isSignedIn() && code.size() == 6 &&
+                      incoming().monitorUserId == request.auth.uid &&
+                      isValidPairingCode(incoming());
+      allow update: if isSignedIn() && code.size() == 6 &&
+                      incoming().code == existing().code &&
+                      incoming().monitorUserId == existing().monitorUserId &&
+                      incoming().expiresAt == existing().expiresAt &&
+                      incoming().createdAt == existing().createdAt &&
+                      incoming().diff(existing()).affectedKeys().hasOnly(['isUsed']);
+      allow delete: if isSignedIn() && (existing().monitorUserId == request.auth.uid);
+    }
+
+    // 5. Location Updates Collection
+    match /location_updates/{deviceId} {
+      allow get: if isSignedIn() && isValidId(deviceId);
+      allow list: if isSignedIn() && (resource.data.userId == request.auth.uid);
+      allow create, update: if isSignedIn() && isValidId(deviceId) &&
+                              incoming().userId == request.auth.uid &&
+                              isValidLocationUpdate(incoming());
+      allow delete: if isSignedIn() && isValidId(deviceId) && (existing().userId == request.auth.uid);
+    }
+
+    // 6. Session Requests Collection (WebRTC signaling)
+    match /session_requests/{requestId} {
+      allow get: if isSignedIn() && isValidId(requestId) &&
+                   (resource.data.monitorUserId == request.auth.uid || resource.data.childUserId == request.auth.uid);
+      allow list: if isSignedIn() &&
+                   (resource.data.monitorUserId == request.auth.uid || resource.data.childUserId == request.auth.uid);
+      allow create: if isSignedIn() && isValidId(requestId) &&
+                      incoming().monitorUserId == request.auth.uid &&
+                      isValidSessionRequest(incoming());
+      allow update: if isSignedIn() && isValidId(requestId) &&
+                      (existing().monitorUserId == request.auth.uid || existing().childUserId == request.auth.uid) &&
+                      incoming().requestId == existing().requestId &&
+                      incoming().monitorUserId == existing().monitorUserId &&
+                      incoming().childUserId == existing().childUserId &&
+                      incoming().createdAt == existing().createdAt &&
+                      isValidSessionRequest(incoming()) &&
+                      incoming().diff(existing()).affectedKeys().hasOnly(['status', 'offerSdp', 'answerSdp', 'updatedAt']);
+      allow delete: if isSignedIn() && isValidId(requestId) &&
+                      (existing().monitorUserId == request.auth.uid || existing().childUserId == request.auth.uid);
+    }
+
+    // 7. Session ICE Candidates Subcollection
+    match /session_candidates/{requestId}/candidates/{candidateId} {
+      allow get, list: if isSignedIn() && isValidId(requestId);
+      allow create: if isSignedIn() && isValidId(requestId) && isValidId(candidateId) &&
+                      isValidSessionCandidate(incoming());
+      allow delete: if isSignedIn() && isValidId(requestId);
+    }
+
+    // 8. Activity Logs Collection
+    match /activity_logs/{logId} {
+      allow get: if isSignedIn() && isValidId(logId) && (resource.data.userId == request.auth.uid);
+      allow list: if isSignedIn() && (resource.data.userId == request.auth.uid);
+      allow create: if isSignedIn() && isValidId(logId) &&
+                      incoming().userId == request.auth.uid &&
+                      isValidActivityLog(incoming());
+      allow delete: if isSignedIn() && isValidId(logId) && (existing().userId == request.auth.uid);
+    }
+  }
+}

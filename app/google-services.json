@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "84368282027",
+    "project_id": "com-aistudio-kafka-safet-1d743",
+    "storage_bucket": "com-aistudio-kafka-safet-1d743.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:84368282027:android:6832e2f38fdf40a76302ee",
+        "android_client_info": {
+          "package_name": "com.aistudio.kafka.safety"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "84368282027-f9bi5ifajqiitee9cku8mtf3339hp9ja.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.aistudio.kafka.safety",
+            "certificate_hash": "822af3c0c417276e9bfa1074fd9516102cb1cc83"
+          }
+        },
+        {
+          "client_id": "84368282027-gjcomov1otre1v1tqkdac3vneg6ke4vm.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAOmhlfXRZXrpg9E8e1hMfDevNW689c1Wk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "84368282027-gjcomov1otre1v1tqkdac3vneg6ke4vm.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,0 +1,90 @@
+<resources>
+    <string name="app_name">Kafka</string>
+    <string name="app_tagline">Parental Safety &amp; Device Monitoring</string>
+    <string name="sign_in_title">Welcome to Kafka</string>
+    <string name="sign_in_subtitle">Transparent, consent-based family safety</string>
+    <string name="sign_in_button">Sign in with Google</string>
+    <string name="sign_out">Sign out</string>
+    
+    <!-- Mode selection -->
+    <string name="mode_selection_title">Select Device Mode</string>
+    <string name="mode_selection_desc">Choose how this device will be used in your family</string>
+    <string name="mode_monitor_title">Monitor Mode (Guardian)</string>
+    <string name="mode_monitor_desc">Track linked devices, view live locations, and request real-time communication.</string>
+    <string name="mode_device_title">Device Mode (Child / Ward)</string>
+    <string name="mode_device_desc">Share location securely, approve sensor check-ins, and retain privacy controls.</string>
+    
+    <!-- Monitor Dashboard -->
+    <string name="monitor_dashboard_title">Family Dashboard</string>
+    <string name="connected_devices">Connected Devices</string>
+    <string name="add_device">Add Device</string>
+    <string name="no_devices_paired">No devices paired yet</string>
+    <string name="no_devices_paired_desc">Tap \'Add Device\' to generate a pairing code and link your child\'s phone.</string>
+    <string name="battery_level">Battery</string>
+    <string name="status_online">Online</string>
+    <string name="status_offline">Offline</string>
+    <string name="last_active">Last active</string>
+    <string name="view_on_map">Live Map</string>
+    <string name="request_camera">Request Video</string>
+    <string name="request_mic">Request Audio</string>
+    <string name="activity_history">Activity History</string>
+    <string name="unlink_device">Unlink Device</string>
+    
+    <!-- Device Dashboard -->
+    <string name="device_dashboard_title">Device Status</string>
+    <string name="registered_name">Registered Name</string>
+    <string name="device_model">Model</string>
+    <string name="location_sharing">Location Sharing</string>
+    <string name="location_active">Active &amp; Sharing</string>
+    <string name="location_paused">Sharing Paused</string>
+    <string name="pause_sharing">Pause Sharing</string>
+    <string name="resume_sharing">Resume Sharing</string>
+    <string name="unlink_confirm_title">Unlink this Device?</string>
+    <string name="unlink_confirm_msg">Unlinking will disconnect this device from all monitors and stop location sharing.</string>
+    <string name="confirm">Confirm</string>
+    <string name="cancel">Cancel</string>
+    
+    <!-- Pairing -->
+    <string name="pairing_title">Pair New Device</string>
+    <string name="pairing_code_label">Pairing Code</string>
+    <string name="pairing_code_instruction">Enter this 6-digit code on your child\'s device. It expires in 5 minutes.</string>
+    <string name="pairing_enter_code_title">Enter Pairing Code</string>
+    <string name="pairing_enter_code_desc">Enter the 6-digit code shown on the guardian device.</string>
+    <string name="pairing_submit">Connect Device</string>
+    <string name="pairing_success">Device paired successfully!</string>
+    <string name="pairing_expired">Pairing code has expired or is invalid.</string>
+    
+    <!-- Location tracking -->
+    <string name="location_notification_channel">Location Sharing</string>
+    <string name="location_notification_title">Kafka Location Active</string>
+    <string name="location_notification_text">Location is being shared transparently with your guardian.</string>
+    
+    <!-- WebRTC Communication -->
+    <string name="incoming_request_title">Sensor Check-in Request</string>
+    <string name="incoming_camera_request">Your guardian is requesting a live video and audio check-in.</string>
+    <string name="incoming_mic_request">Your guardian is requesting a live audio check-in.</string>
+    <string name="allow">Allow</string>
+    <string name="decline">Decline</string>
+    <string name="end_session">End Session</string>
+    <string name="session_active">Live Check-in Active</string>
+    <string name="session_ended">Session ended</string>
+    <string name="mic_muted">Muted</string>
+    <string name="mic_unmuted">Unmuted</string>
+    <string name="flip_camera">Flip Camera</string>
+    
+    <!-- Privacy & Permissions -->
+    <string name="privacy_title">Privacy &amp; Permissions</string>
+    <string name="permission_location">Location Permission</string>
+    <string name="permission_camera">Camera Permission</string>
+    <string name="permission_audio">Microphone Permission</string>
+    <string name="permission_notifications">Notifications</string>
+    <string name="permission_granted">Granted</string>
+    <string name="permission_missing">Action Required</string>
+    <string name="grant_permission">Grant</string>
+    
+    <!-- Settings -->
+    <string name="settings_title">Settings</string>
+    <string name="account_info">Account</string>
+    <string name="privacy_pledge">Kafka Privacy Pledge</string>
+    <string name="privacy_pledge_text">Kafka never records or snoops without active consent. All sensor requests display full-screen approval alerts.</string>
+</resources>

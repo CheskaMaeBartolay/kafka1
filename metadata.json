@@ -1,0 +1,6 @@
+{
+  "name": "Kafka",
+  "description": "Parental Safety & Device Monitoring Application",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
